@@ -3,7 +3,7 @@ import browser from "./browser"
 
 export function serializeForClipboard(view, slice) {
   let context = [], {content, openStart, openEnd} = slice
-  while (openStart > 1 && openEnd > 1 && content.childCount == 1 && content.firstChild.childCount == 1) {
+  while (openStart > 1 && openEnd > 1 && content.childCount == 1) {
     openStart--
     openEnd--
     let node = content.firstChild
