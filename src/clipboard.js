@@ -3,15 +3,17 @@ import browser from "./browser"
 
 export function serializeForClipboard(view, slice) {
   let context = [], {content, openStart, openEnd} = slice
-  while (openStart > 1 && openEnd > 1 && content.childCount == 1 && content.firstChild.childCount == 1) {
+  var serializer = view.someProp("clipboardSerializer") || DOMSerializer.fromSchema(view.state.schema)
+  var nodeName = getNodeName(serializer, content)
+  while (openStart > 1 && openEnd > 1 && content.childCount == 1 && (content.firstChild.childCount == 1 || nodeName === 'TH' || nodeName === 'TD')) {
     openStart--
     openEnd--
     let node = content.firstChild
     context.push(node.type.name, node.attrs != node.type.defaultAttrs ? node.attrs : null)
     content = node.content
+    nodeName = getNodeName(serializer, content)
   }
 
-  let serializer = view.someProp("clipboardSerializer") || DOMSerializer.fromSchema(view.state.schema)
   let doc = detachedDoc(), wrap = doc.createElement("div")
   wrap.appendChild(serializer.serializeFragment(content, {document: doc}))
 
@@ -232,4 +234,9 @@ function addContext(slice, context) {
     openStart++; openEnd++
   }
   return new Slice(content, openStart, openEnd)
+}
+
+function getNodeName(serializer, content) {
+  const fragment = serializer.serializeFragment(content)
+  return fragment && fragment.firstElementChild ? fragment.firstElementChild.nodeName : null
 }
