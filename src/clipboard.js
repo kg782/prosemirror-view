@@ -4,14 +4,14 @@ import browser from "./browser"
 export function serializeForClipboard(view, slice) {
   let context = [], {content, openStart, openEnd} = slice
   var serializer = view.someProp("clipboardSerializer") || DOMSerializer.fromSchema(view.state.schema)
-  var nodeName = getNodeName(serializer, content)
-  while (openStart > 1 && openEnd > 1 && content.childCount == 1 && (content.firstChild.childCount == 1 || nodeName === 'TH' || nodeName === 'TD')) {
+  var nodeName = getDOMNodeName(serializer, content)
+  while (openStart > 1 && openEnd > 1 && content.childCount == 1 && (content.firstChild.childCount == 1 || Object.keys(wrapMap).includes(nodeName))) {
     openStart--
     openEnd--
     let node = content.firstChild
     context.push(node.type.name, node.attrs != node.type.defaultAttrs ? node.attrs : null)
     content = node.content
-    nodeName = getNodeName(serializer, content)
+    nodeName = getDOMNodeName(serializer, content)
   }
 
   let doc = detachedDoc(), wrap = doc.createElement("div")
@@ -236,7 +236,7 @@ function addContext(slice, context) {
   return new Slice(content, openStart, openEnd)
 }
 
-function getNodeName(serializer, content) {
+function getDOMNodeName(serializer, content) {
   const fragment = serializer.serializeFragment(content)
-  return fragment && fragment.firstElementChild ? fragment.firstElementChild.nodeName : null
+  return fragment && fragment.firstElementChild ? fragment.firstElementChild.nodeName.toLowerCase() : null
 }
